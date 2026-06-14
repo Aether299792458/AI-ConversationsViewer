@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -35,7 +35,8 @@ body { font-family: 'EB Garamond', 'Noto Serif SC', Georgia, 'Times New Roman', 
 .main { display: flex; flex: 1; overflow: hidden; }
 
 /* Sidebar */
-.sidebar { width: 320px; min-width: 260px; background: #f2e9d7; border-right: 1px solid #d6cbb7; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar { width: 320px; min-width: 260px; background: #f2e9d7; border-right: 1px solid #d6cbb7; display: flex; flex-direction: column; flex-shrink: 0; position: relative; transition: width .25s ease, min-width .25s ease; }
+.sidebar.collapsed { width: 0; min-width: 0; border-right: none; overflow: hidden; }
 .sidebar-controls { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #d6cbb7; }
 .search-box { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #d6cbb7; background: #fff; color: #333; font-size: 13px; outline: none; }
 .search-box:focus { border-color: #c15f3c; }
@@ -43,6 +44,29 @@ body { font-family: 'EB Garamond', 'Noto Serif SC', Georgia, 'Times New Roman', 
 .sort-btn { background: #e0d8c8; color: #666; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 .sort-btn.active { background: #c15f3c; color: #fff; }
 .conv-count { font-size: 12px; color: #999; margin-left: auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+/* Sidebar toggle button */
+.sidebar-toggle {
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  background: #f2e9d7;
+  border: 1px solid #d6cbb7;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: right .25s ease, background .2s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.sidebar-toggle:hover { background: #e0d8c8; color: #333; }
+.sidebar.collapsed .sidebar-toggle { right: -36px; }
 .conv-list { flex: 1; overflow-y: auto; }
 .conv-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #e0d8c8; transition: background .15s; }
 .conv-item:hover { background: #e8e0d0; }
@@ -90,6 +114,15 @@ body { font-family: 'EB Garamond', 'Noto Serif SC', Georgia, 'Times New Roman', 
 /* Search highlight */
 .highlight { background: #c15f3c; color: #fff; border-radius: 2px; padding: 0 2px; }
 
+/* Mobile: sidebar overlays, auto-collapse on select */
+@media (max-width: 768px) {
+  .sidebar { position: absolute; top: 0; left: 0; height: 100%; z-index: 20; box-shadow: 2px 0 10px rgba(0,0,0,.15); }
+  .sidebar.collapsed { box-shadow: none; }
+  .sidebar-toggle { right: -16px; }
+  .sidebar.collapsed .sidebar-toggle { right: -36px; }
+  .main { position: relative; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -110,6 +143,7 @@ body { font-family: 'EB Garamond', 'Noto Serif SC', Georgia, 'Times New Roman', 
 
 <div class="main">
   <div class="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">\u25C0</button>
     <div class="sidebar-controls">
       <input type="text" class="search-box" id="searchBox" placeholder="Search keyword...">
       <div class="sort-row">
@@ -142,6 +176,9 @@ const chatHeaderEl = document.getElementById('chatHeader');
 const searchBoxEl = document.getElementById('searchBox');
 const convCountEl = document.getElementById('convCount');
 const fileInfoEl = document.getElementById('fileInfo');
+const sidebarEl = document.querySelector('.sidebar');
+const sidebarToggleEl = document.getElementById('sidebarToggle');
+const isMobile = () => window.innerWidth <= 768;
 
 // File loading
 document.getElementById('fileInput').addEventListener('change', (e) => {
@@ -160,6 +197,16 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   };
   reader.readAsText(file);
 });
+
+// Sidebar toggle
+sidebarToggleEl.addEventListener('click', () => {
+  sidebarEl.classList.toggle('collapsed');
+  updateToggleIcon();
+});
+
+function updateToggleIcon() {
+  sidebarToggleEl.textContent = sidebarEl.classList.contains('collapsed') ? '\u25B6' : '\u25C0';
+}
 
 // Search
 searchBoxEl.addEventListener('input', (e) => {
@@ -244,6 +291,11 @@ function selectConversation(uuid) {
   if (!conv) return;
   chatHeaderEl.textContent = getConvName(conv);
   renderMessages(conv);
+  // Auto-collapse sidebar on mobile after selecting a conversation
+  if (isMobile() && !sidebarEl.classList.contains('collapsed')) {
+    sidebarEl.classList.add('collapsed');
+    updateToggleIcon();
+  }
 }
 
 function renderMessages(conv) {
