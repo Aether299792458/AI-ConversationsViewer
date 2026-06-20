@@ -7,6 +7,7 @@ An elegant offline viewer for your Claude & ChatGPT conversations — whether yo
 ## What
 
 ![Screenshot](./screenshot.png)
+![Screenshot](./screenshot2.png)
 
 Claude bans you? Cold JSON. ChatGPT exports your data? A folder full of `conversation.json` files. Either way, you're left staring at raw data like a caveman. This single-file HTML tool reconstructs your chats into something readable — warm beige, serif elegance, the whole vibe. Two tabs, one file, zero dignity lost.
 
@@ -20,6 +21,8 @@ Claude bans you? Cold JSON. ChatGPT exports your data? A folder full of `convers
 - Collapsible tool use / tool result blocks (Claude)
 - Per-conversation & global statistics (message counts, word counts, time ranges)
 - Zero install — just open the file (fonts & marked.js loaded from CDN)
+
+![Screenshot](./screenshot3.png)
 
 ## Usage
 
